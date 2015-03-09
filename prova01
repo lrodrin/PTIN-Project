@@ -11,7 +11,7 @@ uint8_t currentSensor = 0;          // Keeps track of which sensor is active.
 //constructor NewPing(trigger, echo, max distance)
 NewPing sonar[SONAR_NUM] = {    // Sensor object array. Each sensor's trigger pin, echo pin, and max distance to ping.
     NewPing(6, 7, MAX_DISTANCE), // sensor 0
-    NewPing(5, 4, MAX_DISTANCE) //sensor 1
+    NewPing(4, 5, MAX_DISTANCE) //sensor 1
 };
 
 void setup() {
