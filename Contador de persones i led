@@ -1,0 +1,63 @@
+#include <NewPing.h>
+
+#define DISTANCIA_MAXIMA 200 // Maxim distance (in cm) to ping.
+#define PING_INTERVAL 33 // Milliseconds between sensor pings (29ms is about the min to avoid cross-sensor echo).
+
+NewPing sensor0 = NewPing(6, 7, DISTANCIA_MAXIMA);
+NewPing sensor1 = NewPing(4, 5, DISTANCIA_MAXIMA); 
+int distancia0,distancia1;
+bool detecta0,detecta1;
+int contpers = 0;
+void setup() {
+  Serial.begin (9600);       // inicializa el puerto seria a 9600 baudios
+  pinMode(13, 1);            // Define el pin 13 como salida (led)
+}
+
+void loop() {
+  // put your main code here, to run repeatedly:
+  distancia0 = sensor0.ping_cm();
+  distancia1 = sensor1.ping_cm();
+  Serial.print("Persones a la sala: ");
+  Serial.print(contpers);           // envia el valor de la distancia por el puerto serial
+    Serial.print("\n");
+   
+ /*   Serial.print("Sensor0: ");
+    Serial.print(distancia0);           // envia el valor de la distancia por el puerto serial
+    Serial.print("cm ");       // le coloca a la distancia los centimetros "cm"  
+    Serial.print("\n");
+    Serial.print("Sensor1: ");
+    Serial.print(distancia1);           // envia el valor de la distancia por el puerto serial
+    Serial.print("cm ");
+    Serial.print("\n");
+ 
+    Serial.print(" persones = ");
+    Serial.print(contpers); 
+    Serial.print("\n");*/
+  digitalWrite(13, LOW);  // led apagat
+
+  if(distancia0 < 70 ){      
+    for(int cont = 2 ; cont > 0 ; cont -- )
+      {
+          delay(200);
+          digitalWrite(13, HIGH);
+          delay(200);
+          digitalWrite(13, LOW);
+      }
+     Serial.print("detcta0 ");
+     Serial.print("\n");
+     delay(1500);
+     contpers++;
+  }
+  else if(distancia1 < 70)
+  {
+      delay(200);
+      digitalWrite(13, HIGH);
+      delay(200);
+      digitalWrite(13, LOW);
+      
+     Serial.print("detcta1 ");
+     Serial.print("\n");
+     delay(1500);     
+     contpers--;
+  }
+}
