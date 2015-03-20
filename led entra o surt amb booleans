@@ -18,11 +18,8 @@ void loop() {
   // put your main code here, to run repeatedly:
   distancia0 = sensor0.ping_cm();
   distancia1 = sensor1.ping_cm();
-  Serial.print("Persones a la sala: ");
-  Serial.print(contpers);           // envia el valor de la distancia por el puerto serial
-    Serial.print("\n");
    
- /*   Serial.print("Sensor0: ");
+  /*Serial.print("Sensor0: ");
     Serial.print(distancia0);           // envia el valor de la distancia por el puerto serial
     Serial.print("cm ");       // le coloca a la distancia los centimetros "cm"  
     Serial.print("\n");
@@ -31,39 +28,54 @@ void loop() {
     Serial.print("cm ");
     Serial.print("\n");
  
-    Serial.print(" persones = ");
+     Serial.print(" persones = ");
     Serial.print(contpers); 
     Serial.print("\n");*/
   digitalWrite(13, LOW);  // led apagat
-  if(detecta0 and detecta1 and distancia0 > 70 and distancia0 > 70)
+  if(detecta0 and detecta1 and distancia0 > 70 and distancia1 > 70)
   {
     detecta0 = false;
     detecta1 = false;
+    Serial.print("receteja sensors");           // envia el valor de la distancia por el puerto serial
+        Serial.print("\n");
   }
-  if(distancia0 < 70 ){      
-    for(int cont = 2 ; cont > 0 ; cont -- )
+  if(distancia0 < 50 ){      
+    /*for(int cont = 2 ; cont > 0 ; cont -- )
       {
           delay(200);
           digitalWrite(13, HIGH);
           delay(200);
           digitalWrite(13, LOW);
-      }
+      }*/
      Serial.print("detcta0 ");
      Serial.print("\n");
-    if(detecta1)
-       contpers++;
-    detecta0 = true;
+    if(detecta1 and !detecta0)
+    {
+        contpers++;
+        Serial.print("Persones a la sala: ");
+        Serial.print(contpers);           // envia el valor de la distancia por el puerto serial
+        Serial.print("\n");
+    }
+       detecta0 = true;
+    
   }
-  else if(distancia1 < 70)
+  else if(distancia1 < 50)
   {
-      delay(200);
+     /* delay(200);
       digitalWrite(13, HIGH);
       delay(200);
-      digitalWrite(13, LOW);
+      digitalWrite(13, LOW);*/
       
      Serial.print("detcta1 ");
      Serial.print("\n");
-     if(detecta0)
+     if(detecta0 and !detecta1)
+     {
        contpers--;
+        Serial.print("Persones a la sala: ");
+        Serial.print(contpers);           // envia el valor de la distancia por el puerto serial
+        Serial.print("\n");
+     }
+       detecta1 = true;
   }
+  delay(50);
 }
