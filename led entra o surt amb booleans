@@ -2,8 +2,8 @@
 
 #define DISTANCIA_MAXIMA 200 // Maxim distance (in cm) to ping.
 
-NewPing sensor0 = NewPing(6, 7, DISTANCIA_MAXIMA);
-NewPing sensor1 = NewPing(4, 5, DISTANCIA_MAXIMA); 
+NewPing sensor0 = NewPing(10, 11, DISTANCIA_MAXIMA);
+NewPing sensor1 = NewPing(6, 9, DISTANCIA_MAXIMA); 
 int distancia0,distancia1;
 bool detecta0 = false;
 bool detecta1 = false;
