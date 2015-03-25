@@ -3,8 +3,8 @@
 #define DISTANCIA_MAXIMA 200 // Maxim distance (in cm) to ping.
 #define PING_INTERVAL 33 // Milliseconds between sensor pings (29ms is about the min to avoid cross-sensor echo).
 
-NewPing sensor0 = NewPing(6, 7, DISTANCIA_MAXIMA);
-NewPing sensor1 = NewPing(4, 5, DISTANCIA_MAXIMA); 
+NewPing sensor0 = NewPing(10, 11, DISTANCIA_MAXIMA);
+NewPing sensor1 = NewPing(6, 9, DISTANCIA_MAXIMA); 
 int distancia0,distancia1;
 bool detecta0,detecta1;
 int contpers = 0;
