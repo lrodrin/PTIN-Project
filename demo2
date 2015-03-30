@@ -1,0 +1,85 @@
+#include <NewPing.h>
+
+#define DISTANCIA_MAXIMA 500 // Maxim distance (in cm) to ping.
+
+NewPing sensor0 = NewPing(10, 11, DISTANCIA_MAXIMA);
+NewPing sensor1 = NewPing(6, 9, DISTANCIA_MAXIMA); 
+int distancia0,distancia1;
+bool detecta0 = false;
+bool detecta1 = false;
+int contpers = 0;
+void setup() {
+  Serial.begin (9600);       // inicializa el puerto seria a 9600 baudios
+  pinMode(13, 1);            // Define el pin 13 como salida (led)
+}
+
+void loop() {
+  // put your main code here, to run repeatedly:
+  distancia0 = sensor0.ping_cm();
+  distancia1 = sensor1.ping_cm();
+   
+  /*  Serial.print("Sensor0: ");
+    Serial.print(distancia0);           // envia el valor de la distancia por el puerto serial
+    Serial.print("cm ");       // le coloca a la distancia los centimetros "cm"  
+    Serial.print("\n");
+    Serial.print("Sensor1: ");
+    Serial.print(distancia1);           // envia el valor de la distancia por el puerto serial
+    Serial.print("cm ");
+    Serial.print("\n");
+ 
+   Serial.print(" persones = ");
+    Serial.print(contpers); 
+    Serial.print("\n");*/
+//  digitalWrite(13, LOW);  // led apagat
+  if(distancia0 < 50 ){      
+    /*for(int cont = 2 ; cont > 0 ; cont -- )
+      {
+          delay(200);
+          digitalWrite(13, HIGH);
+          delay(200);
+          digitalWrite(13, LOW);
+      }*/
+     Serial.print("detcta0 ");
+     Serial.print("\n");
+    if(detecta1 and !detecta0)
+    {
+        contpers++;
+        Serial.print("Persones a la sala: ");
+        Serial.print(contpers);           // envia el valor de la distancia por el puerto serial
+        Serial.print("\n");
+    }
+       detecta0 = true;
+    
+  }
+  else if(distancia1 < 50)
+  {
+     /* delay(200);
+      digitalWrite(13, HIGH);
+      delay(200);
+      digitalWrite(13, LOW);*/
+      
+    // Serial.print("detcta1 ");
+//     Serial.print("\n");
+     if(detecta0 and !detecta1)
+     {
+       contpers--;
+        Serial.print("Persones a la sala: ");
+        Serial.print(contpers);           // envia el valor de la distancia por el puerto serial
+        Serial.print("\n");
+     }
+       detecta1 = true;
+  }
+  if(detecta0 and detecta1 and distancia0 > 50 and distancia1 > 50)
+  {
+    detecta0 = false;
+    detecta1 = false;
+  //  Serial.print("receteja sensors");           // envia el valor de la distancia por el puerto serial
+  //      Serial.print("\n");
+    delay(1000);
+  }
+  delay(50);
+  if(contpers > 0)
+       digitalWrite(13, HIGH);
+  else
+       digitalWrite(13, LOW);
+}
