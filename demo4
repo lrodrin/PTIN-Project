@@ -80,7 +80,7 @@ void SENSOR_TASK() {
   
   // Send();
   
-  switch (range) {
+  /*switch (range) {
     case 0:
       Serial.println("hihi");
       break;
@@ -89,7 +89,7 @@ void SENSOR_TASK() {
       break;
     etc...
   }
-  delay(1);  //delay in between reads for stability
+  delay(1);  //delay in between reads for stability*/
   
 }
 
