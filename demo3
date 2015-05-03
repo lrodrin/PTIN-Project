@@ -97,7 +97,7 @@ void Count() {
 
     if(detects1 and !detects0) {
       
-      counter = counter + 1;
+      counter++;
       Serial.print("people in the room: ");
       Serial.println(counter); 
       
@@ -110,7 +110,7 @@ void Count() {
     
     if(detects0 and !detects1) {
       
-      counter = counter - 1;
+      counter--;
       Serial.print("people in the room: ");
       Serial.println(counter); 
       
