@@ -26,6 +26,7 @@ void setup() {
 void loop() {
   SENSOR_TASK();
 // end main program PR2&PR3
+}
 
 
 //Funció d'enviar el comptador cap al PR2
@@ -68,7 +69,7 @@ void SENSOR_TASK() {
   sensor0Value = constrain(sensor0Value, 0, 255);  // in case the sensor0 value is outside the range seen during calibration
   sensor1Value = constrain(sensor1Value, 0, 255);  // in case the sensor1 value is outside the range seen during calibration
   
-  static int state = 0;
+  int state = 0;
   seg=millis();
   int rang;
   switch(state){
@@ -91,10 +92,6 @@ void SENSOR_TASK() {
     Serial.print("Enviar");
     enviar();
     break;
-}
-  
-  Count();
-  
 }
 
 void Count() {
