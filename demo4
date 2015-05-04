@@ -1,9 +1,6 @@
 #include <NewPing.h>
 
 #define MAXIMUM_DISTANCE 500 // in cm
-#define STATE_IDLE  0
-#define STATE_CALCUL  1
-#define STATE_ENVIAR  2
 NewPing sensor0 = NewPing(10, 11, MAXIMUM_DISTANCE);
 NewPing sensor1 = NewPing(6, 9, MAXIMUM_DISTANCE); 
 
@@ -28,29 +25,21 @@ void setup() {
 
 void loop() {
   seg=millis();
-  int range;
-  distance0 = sensor0.ping_cm();
-  distance1 = sensor1.ping_cm();
-  if ((distance0 < 50 || distance1 < 50) && seg < 5){
-    range=1;
+  int rang;
+  if (seg < 5000){
+    rang=0;
   }
-  else if ((distance0 > 50 || distance1 > 50) && seg < 5){
-    range=0;
+  else if (seg > 5000){
+    rang=1;
   }
-  else if (seg > 5){
-    range=2;
-  }
-  switch(range){
+  switch(rang){
   case(0):
-    loop();
-    break;
-  case(1):
     Serial.print("Sensortask");
     SENSOR_TASK();
     seg=0;
     break;
   }
-  case(2):
+  case(1):
     Serial.print("Enviar");
     enviar();
     seg=0;
@@ -58,9 +47,12 @@ void loop() {
 }
 // end main program PR2&PR3
 
-void enviar() {
-  int x = counter;
-}
+
+//Funció d'enviar el comptador cap al PR2
+//void enviar() {
+  //int x = counter;
+  //cridem funcio wifi
+//}
 
 void Init_Sensors() {
   
@@ -73,8 +65,8 @@ void Calibration() {
 
     while (millis() < 5000) {   // calibrate during the first five seconds
 
-      sensor0Value = analogRead(sensor0.ping_cm());    //10
-      sensor1Value = analogRead(sensor1.ping_cm());    //6
+      sensor0Value = analogRead(10);    
+      sensor1Value = analogRead(6);    
 
       if (sensor0Value > sensorMax) sensorMax = sensor0Value;  // record the maximum sensor0 value
       if (sensor1Value > sensorMax) sensorMax = sensor1Value;  // record the maximum sensor1 value
@@ -89,27 +81,14 @@ void Calibration() {
 
 void SENSOR_TASK() {
   
-  sensor0Value = analogRead(sensor0.ping_cm());   // read the sensor0   //10
-  sensor1Value = analogRead(sensor1.ping_cm());  // read the sensor1    //6
+  sensor0Value = analogRead(10);                                      // read the sensor0   
+  sensor1Value = analogRead(6);                                       // read the sensor1    
   sensor0Value = map(sensor0Value, sensorMin, sensorMax, 0, 255);    // apply the calibration to the sensor0 reading
   sensor1Value = map(sensor1Value, sensorMin, sensorMax, 0, 255);    // apply the calibration to the sensor1 reading
   sensor0Value = constrain(sensor0Value, 0, 255);  // in case the sensor0 value is outside the range seen during calibration
   sensor1Value = constrain(sensor1Value, 0, 255);  // in case the sensor1 value is outside the range seen during calibration
   
   Count();
-  
-  // Send();
-  
-  /*switch (range) {
-    case 0:
-      Serial.println("hihi");
-      break;
-    case 1:
-      Serial.println("huhu");
-      break;
-    etc...
-  }
-  delay(1);  //delay in between reads for stability*/
   
 }
 
@@ -119,7 +98,7 @@ void Count() {
   distance1 = sensor1.ping_cm();
   int range =  average - 30; 
  
-  if(distance0 < 50) {   
+  if(distance0 < range) {   
     
     Serial.print("detected sensor 0: ");
     Serial.println(distance0);
@@ -137,7 +116,7 @@ void Count() {
     detects0 = true;
     
   }
-  else if(distance1 < 50) {
+  else if(distance1 < range) {
     
     if(detects0 and !detects1) {
       
@@ -161,7 +140,7 @@ void Count() {
         detects1 = false;        
   }
   
-  Serial.print("people in the room: ");
+  Serial.print("People in the room: ");
   Serial.println(counter);           
   
 }
