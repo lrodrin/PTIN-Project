@@ -24,27 +24,7 @@ void setup() {
 }
 
 void loop() {
-  seg=millis();
-  int rang;
-  if (seg < 5000){
-    rang=0;
-  }
-  else if (seg > 5000){
-    rang=1;
-  }
-  switch(rang){
-  case(0):
-    Serial.print("Sensortask");
-    SENSOR_TASK();
-    seg=0;
-    break;
-  }
-  case(1):
-    Serial.print("Enviar");
-    enviar();
-    seg=0;
-    break;
-}
+  SENSOR_TASK();
 // end main program PR2&PR3
 
 
@@ -87,6 +67,31 @@ void SENSOR_TASK() {
   sensor1Value = map(sensor1Value, sensorMin, sensorMax, 0, 255);    // apply the calibration to the sensor1 reading
   sensor0Value = constrain(sensor0Value, 0, 255);  // in case the sensor0 value is outside the range seen during calibration
   sensor1Value = constrain(sensor1Value, 0, 255);  // in case the sensor1 value is outside the range seen during calibration
+  
+  static int state = 0;
+  seg=millis();
+  int rang;
+  switch(state){
+  case(0):    //IDLE
+    if (seg < 5000){
+      state=1;
+    }
+    if (seg > 5000){
+      state=2;
+    }
+    seg=0;
+    break;
+  }
+  case(1):    //COMPTADOR
+    seg=0;
+    Count();
+    break;
+  case(2):
+    seg=0;
+    Serial.print("Enviar");
+    enviar();
+    break;
+}
   
   Count();
   
