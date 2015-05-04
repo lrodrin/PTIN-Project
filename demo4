@@ -24,9 +24,24 @@ void setup() {
 }
 
 void loop() {
-
-  SENSOR_TASK(); 
-
+  seg=millis();
+  int range;
+  if (seg < 5){
+    range=0;
+  }
+  else {
+    range=1;
+  }
+  switch(range){
+  case(0):
+    Serial.print("Sensortask");
+    SENSOR_TASK();
+    seg=0;
+  }
+  case(1):
+    Serial.print("enviar);
+    enviar();
+    seg=0;
 }
 // end main program PR2&PR3
 
