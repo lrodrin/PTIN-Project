@@ -4,9 +4,6 @@
 NewPing sensor0 = NewPing(10, 11, MAXIMUM_DISTANCE);
 NewPing sensor1 = NewPing(6, 9, MAXIMUM_DISTANCE); 
 
-// constants
-//const int ledPin = 13;
-
 // variables 
 int distance0, distance1;
 int average = 0;
@@ -16,7 +13,7 @@ int counter = 0;
 
 int sensor0Value = 0;
 int sensor1Value = 0;
-int sensorMin = 1023;
+int sensorMin = MAXIMUM_DISTANCE;
 int sensorMax = 0;
 
 // start main program PR2&PR3
@@ -42,26 +39,19 @@ void Init_Sensors() {
 
 void Calibration() {
 
-  // turn on LED to signal the start of the calibration period
-  //pinMode(13, OUTPUT);
-  //digitalWrite(ledPin, HIGH);
-  //delay(1000);
+    while (millis() < 5000) {   // calibrate during the first five seconds
 
-  while (millis() < 5000) {   // calibrate during the first five seconds
+      sensor0Value = analogRead(sensor0.ping_cm());
+      sensor1Value = analogRead(sensor1.ping_cm());
 
-    sensor0Value = analogRead(sensor0.ping_cm());
-    sensor1Value = analogRead(sensor1.ping_cm());
-
-    if (sensor0Value > sensorMax) sensorMax = sensor0Value;  // record the maximum sensor0 value
-    if (sensor1Value > sensorMax) sensorMax = sensor1Value;  // record the maximum sensor1 value
-    if (sensor0Value < sensorMin) sensorMin = sensor0Value;  // record the minimum sensor0 value
-    if (sensor1Value < sensorMin) sensorMin = sensor1Value;  // record the minimum sensor1 value
+      if (sensor0Value > sensorMax) sensorMax = sensor0Value;  // record the maximum sensor0 value
+      if (sensor1Value > sensorMax) sensorMax = sensor1Value;  // record the maximum sensor1 value
+      if (sensor0Value < sensorMin) sensorMin = sensor0Value;  // record the minimum sensor0 value
+      if (sensor1Value < sensorMin) sensorMin = sensor1Value;  // record the minimum sensor1 value
 
   }
   
-  //digitalWrite(13, LOW); // signal the end of the calibration period
-  Serial.println("calibration completed");
-  //delay(1000);
+  Serial.println("calibration completed");  // end of the calibration period
 
 }
 
@@ -73,8 +63,6 @@ void SENSOR_TASK() {
   sensor1Value = map(sensor1Value, sensorMin, sensorMax, 0, 255);    // apply the calibration to the sensor1 reading
   sensor0Value = constrain(sensor0Value, 0, 255);  // in case the sensor0 value is outside the range seen during calibration
   sensor1Value = constrain(sensor1Value, 0, 255);  // in case the sensor1 value is outside the range seen during calibration
-  //analogWrite(ledPin, sensor0Value);    // fade the LED using the calibrated value
-  //analogWrite(ledPin, sensor1Value);
   
   Count();
   
