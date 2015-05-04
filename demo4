@@ -41,8 +41,8 @@ void Calibration() {
 
     while (millis() < 5000) {   // calibrate during the first five seconds
 
-      sensor0Value = analogRead(sensor0.ping_cm());
-      sensor1Value = analogRead(sensor1.ping_cm());
+      sensor0Value = analogRead(sensor0.ping_cm());    //10
+      sensor1Value = analogRead(sensor1.ping_cm());    //6
 
       if (sensor0Value > sensorMax) sensorMax = sensor0Value;  // record the maximum sensor0 value
       if (sensor1Value > sensorMax) sensorMax = sensor1Value;  // record the maximum sensor1 value
@@ -57,8 +57,8 @@ void Calibration() {
 
 void SENSOR_TASK() {
   
-  sensor0Value = analogRead(sensor0.ping_cm());   // read the sensor0
-  sensor1Value = analogRead(sensor1.ping_cm());  // read the sensor1
+  sensor0Value = analogRead(sensor0.ping_cm());   // read the sensor0   //10
+  sensor1Value = analogRead(sensor1.ping_cm());  // read the sensor1    //6
   sensor0Value = map(sensor0Value, sensorMin, sensorMax, 0, 255);    // apply the calibration to the sensor0 reading
   sensor1Value = map(sensor1Value, sensorMin, sensorMax, 0, 255);    // apply the calibration to the sensor1 reading
   sensor0Value = constrain(sensor0Value, 0, 255);  // in case the sensor0 value is outside the range seen during calibration
