@@ -1,0 +1,40 @@
+
+#include <QueueList.h>
+
+// declare string messages.
+String msgA = "Until u cum";
+String msgB = "Me gustan los penes!";
+String msgC = "Me gustas tu";
+String msgD = "I love cats";
+
+// create a queue of strings messages.
+QueueList <String> queue;
+
+// startup point entry (runs once).
+void
+setup () {
+  // start serial communication.
+  Serial.begin (9600);
+
+  // set the printer of the queue.
+  queue.setPrinter (Serial);
+
+  // push all the string messages to the queue.
+  queue.push (msgA);
+  queue.push (msgB);
+  queue.push (msgC);
+  queue.push (msgD);
+  Serial.print("Peek: ");
+  Serial.println(queue.peek());
+  Serial.print("Pook: ");
+  Serial.println(queue.pook(2));
+  // pop all the string messages from the queue.
+  while (!queue.isEmpty ())
+    Serial.println (queue.pop ());
+}
+
+// loop the main sketch.
+void
+loop () {
+  // nothing here.
+}
