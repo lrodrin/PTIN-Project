@@ -1,0 +1,120 @@
+#include <NewPing.h>
+
+///***/// son les coses que falten en teoria
+
+#define MAXIMUM_DISTANCE 500// in cm
+#define PING_INTERVAL 33// Milliseconds between sensor pings (29ms is about the min to avoid cross-sensor echo).
+unsigned long pingTimer[2];// Holds the times when the next ping should happen for each sensor.
+unsigned int cm[2];// Where the ping distances are stored.
+uint8_t currentSensor = 0;// Keeps track of which sensor is active.
+
+NewPing sonar[2] = {// Sensor object array. Each sensor's trigger pin, echo pin, and max distance to ping.
+    NewPing(10, 11, MAXIMUM_DISTANCE),
+    NewPing(6, 9, MAXIMUM_DISTANCE)
+};
+
+//Global variables 
+int range = 0; //holds the range where you can detect something 
+bool sensor0 = false; //sensor 0 first to detect
+bool sensor1 = false; //sensor 1 .....
+bool send_counter = false; //signal to sent the counter
+bool ack_ok = false; //signal to wait for ack //true when received
+bool counted = false; //signal to know if someone was detected
+//global counter
+int counter = 0;
+//timers
+double timer; //sensor_task timer
+double main_timer; //loop timer
+
+
+// start main program PR2&PR3
+void setup() {
+  Init_Sensors();
+}
+
+void loop() {
+  main_timer = millis();
+  ///***///
+  //call sensor_task every 5ms
+  //call send every 10 ms
+  SENSOR_TASK();
+  //end main program PR2&PR3
+}
+
+void Init_Sensors() {
+  Serial.begin (9600);
+  Calibration();
+}
+
+void Calibration() {
+  ///***///set range from 0 to max distande = range
+}
+
+void SENSOR_TASK() {
+  
+  int state;
+  
+  if (!counted or (millis()-timer) <= 5000){ //if none was previously counted or not time to send keep counting //so if time to send but none counted keep counting
+    state=1;
+  }
+  else if (counted and (millis()-timer) > 5000){ //if someone was counted and is time to send
+    state=2;
+  }
+  switch (state){
+    case 1:
+      //Serial.println("/////////////////////////////////////////////////////Contar/////////////////////////////////////////////////////");
+      Count();
+      timer = millis();
+      break;
+    case 2:
+      //Serial.println("/////////////////////////////////////////////////////Enviar/////////////////////////////////////////////////////");
+      //trigger send signals
+      send_counter = true;
+      ack_ok = false;
+      break;
+  }
+  
+}
+void Count() {//chechs the 2 sensors for distance
+  for (uint8_t i = 0; i < 2; i++) { // Loop through all the sensors.
+        if (millis() >= pingTimer[i]) {         // Is it this sensor's time to ping?
+            pingTimer[i] += PING_INTERVAL * 2;  // Set next time this sensor will be pinged.
+            if (i == 0 && currentSensor == 2 - 1) oneSensorCycle(); // Sensor ping cycle complete, do something with the results.
+            sonar[currentSensor].timer_stop();          // Make sure previous timer is canceled before starting a new ping (insurance).
+            currentSensor = i;                          // Sensor being accessed.
+            cm[currentSensor] = 0;                      // Make distance zero in case there's no ping echo for this sensor.
+            sonar[currentSensor].ping_timer(echoCheck); // Do the ping (processing continues, interrupt will call echoCheck to look for echo).
+        }
+    }
+}
+void echoCheck() { // If ping received, set the sensor distance to array.
+    if (sonar[currentSensor].check_timer()){
+        cm[currentSensor] = sonar[currentSensor].ping_result / US_ROUNDTRIP_CM;
+        ///***///chech if the reading was in range
+        if(cm[currentSensor] <= range){
+            //first sensor to detect to know direction
+            if(currentSensor == 0)
+                bool sensor0 = true;//the sensor 0 detected first
+            else
+               bool sensor1 = true;//the sensor 1 detected first  
+        }  
+    }
+}
+void oneSensorCycle() { // Sensor ping cycle complete, do something with the results.
+    for (uint8_t i = 0; i < 2; i++) {
+    ///***///write sensor data to list 
+    ///llista de 10 posicions
+    //funciona com una fifo aqui es posa una dada pel darrere
+    //la funcio people check borrar una per davant un cop la llista tingi un size de 10-15  
+    }
+    //call function to check list for people
+    people_check();
+}
+void people_check(){
+  ///***///
+  //var sensor0, sensor1 holds the first sensor to encounter something
+  //checks the list for people to count
+  //if someone was tetected refresh the counter
+  //counted = true
+  //else counted = false
+}
