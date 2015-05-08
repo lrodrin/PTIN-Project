@@ -47,6 +47,8 @@ int counter = 0;
 //timers
 double timer; //sensor_task timer
 double main_timer; //loop timer
+double ping_timer; //timeout ping timer
+double timer1; // case timer
 
 //Init functions
 void init_wifi(){
