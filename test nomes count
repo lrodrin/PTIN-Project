@@ -1,0 +1,59 @@
+#include <NewPing.h>
+
+#define DISTANCIA_MAXIMA 200 // Maxim distance (in cm) to ping.
+
+NewPing sensor0 = NewPing(10, 11, DISTANCIA_MAXIMA);
+NewPing sensor1 = NewPing(6, 9, DISTANCIA_MAXIMA); 
+int distancia0,distancia1;
+bool detecta0 = false;
+bool detecta1 = false;
+int contpers = 0;
+int fd = 0;
+void setup() {
+  Serial.begin (9600);       // inicializa el puerto seria a 9600 baudios
+  pinMode(13, 1);            // Define el pin 13 como salida (led)
+  fd = millis();
+}
+
+void loop() {
+  // put your main code here, to run repeatedly:
+  delay(50);
+  distancia0 = sensor0.ping_cm();
+  distancia1 = sensor1.ping_cm();
+    if(fd = 0 or fd < millis() +1000){
+      if(distancia0 < 100 ){
+         Serial.println("detcta0 ");
+         Serial.println(distancia0);
+        if(detecta1 and !detecta0)
+        {
+            contpers++;
+            Serial.print("Persones a la sala: ");
+            Serial.print(contpers);           // envia el valor de la distancia por el puerto serial
+            Serial.print("\n");
+        }
+           detecta0 = true;
+        
+      }
+      else if(distancia1 < 100)
+      {      
+         Serial.println("detcta1 ");
+         Serial.println(distancia1);
+         if(detecta0 and !detecta1)
+         {
+           contpers--;
+            Serial.print("Persones a la sala: ");
+            Serial.print(contpers);           // envia el valor de la distancia por el puerto serial
+            Serial.print("\n");
+         }
+           detecta1 = true;
+      }
+      if(detecta0 and detecta1 and distancia0 > 100 and distancia1 > 100)
+      {
+        detecta0 = false;
+        detecta1 = false;
+        Serial.print("receteja sensors");           // envia el valor de la distancia por el puerto serial
+        Serial.print("\n");
+        fd = millis();
+      }
+    }
+}
