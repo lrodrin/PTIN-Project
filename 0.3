@@ -1,0 +1,192 @@
+#include <SPI.h>
+#include <WiFi.h>
+#include <string.h>
+#include <NewPing.h>
+
+#define MAXIMUM_DISTANCE 500
+
+// Sensor object. Each sensor's trigger pin, echo pin, and max distance to ping.
+NewPing sensor0 = NewPing(3, 5, MAXIMUM_DISTANCE);
+NewPing sensor1 = NewPing(6, 9, MAXIMUM_DISTANCE); 
+
+//Global Variables
+char ssid[5];     //  your network SSID (name)
+char pass[18];
+byte mac[6];                      //MAC address
+char server[15];
+int status;     // the Wifi radio's status
+WiFiClient client;
+int estat;
+bool detecta0 = false;
+bool detecta1 = false;
+int distancia0,distancia1;
+
+// estat = 0 -> IDLE
+// estat = 1 -> send
+// estat = 2 -> SLEEP
+unsigned long tics;
+unsigned long time;
+unsigned long timeConect;
+unsigned long timeSend;
+String macaddress;
+int range = 0; //holds the range where you can detect something 
+bool send_counter = false; //signal to sent the counter
+bool ack_ok = false; //signal to wait for ack //true when received
+bool counted = false; //signal to know if someone was detectedM
+//global counter
+int counter = 0;
+//timers
+int fd = 0;
+double timer,timer1; //sensor_task timer, and fake deylay timer (count function)
+double main_timer; //loop timer
+double ping_timer;
+
+//Init functions
+void init_wifi(){
+  //Serial.println("Setup!!");
+  tics= millis();
+  strcpy(ssid, "XARD"); 
+  strcpy(pass, "PTIN:@2015arduino");
+  WiFi.macAddress(mac);        // variable con guardarem l'identificador MAC del wifishield.
+//IPAddress server(74,125,232,128);  // numeric IP for Google (no DNS)
+  strcpy(server, "147.83.159.201");    // name address for Google (using DNS)
+  status = WL_IDLE_STATUS;
+  macaddress = getmac(mac);
+  estat = 0;
+}
+
+void Init_Sensors() {
+  //Serial.begin (9600);
+  // Set the printer of the queue.
+  Calibration();
+  timer= millis();
+  timer1 = millis();
+  ping_timer = millis();
+  fd = millis();
+}
+
+//Loop Functions
+void sensor_task() {
+  //Serial.println("sensor_taks");
+  if (!counted and (millis()-ping_timer) > 300000){//if no counted and 5 min delay send ping(counter)
+     Serial.println("send ping");
+     send_counter = true;
+     ack_ok = false;
+      ping_timer = millis();
+  }
+  else if (counted and (millis()-timer1) > 5000){ //if someone was counted and is time to send7
+    Serial.println("send counter");
+    send_counter = true;
+    ack_ok = false;
+    ping_timer = millis();
+    counted = false;
+    timer1 = millis();
+  }
+  else if((!counted) or (millis()-timer1 < 5000)){ //if none was previously counted
+    Count();
+   }
+}
+
+void wifi_task(){
+  if (estat == 0){
+    idle();
+  }else if(estat == 1){
+    envia();
+  }else if ( estat ==2){
+    sleep();
+  } 
+}
+
+//Idle functions
+void idle(){
+  //Serial.println("iddle");
+  time = millis();
+  if ((status != WL_CONNECTED) and (((time - timeConect) > 10000) or ((time-timeConect) < 0))) {
+    time = millis();
+    timeConect = millis();
+    conectWifi();
+  }
+  if (status == WL_CONNECTED) {
+    if(send_counter == true){
+       estat = 1;
+    }
+  }
+  if((send_counter==false) and ((time-timeSend) > 300000) or ((time-timeSend) < 0)){//comprovem que pasin 5 minuts y que no hi hagin dades pendents
+    estat = 2;
+    WiFi.disconnect(); //desconectem del wifi
+  }
+  time = millis();
+}
+
+void Count() {
+  ///
+}
+
+//State functions
+void envia(){
+      Serial.println("connected to server");
+      // Make a HTTP request:
+      client.println("GET /"+macaddress+"/"+counter);
+      client.println("Host: www.google.com");//name of server
+      client.println("Connection: close");
+      client.println();
+	  estat = 0;
+	  send_counter = false;
+}
+
+void sleep(){
+  Serial.println("in sleep....");
+  if (send_counter) estat=0;
+  //if (status != WL_CONNECTED) {
+    //time = millis();
+    //timeConect = millis();
+    //conectWifi();
+  //}
+}
+
+//Auxiliar functions
+String getmac(byte mac[]){ 
+  // Mostra per pantalla la MAC de la WiFi:
+  String macstr;
+  for (int i=5; i >= 0; i--) {
+    String temp = String(mac[i], HEX);
+    if (temp.length() == 1) temp = String("0" + temp);
+    macstr = String(macstr + temp);
+    if (i > 0) macstr = String(macstr + ":");
+  }
+  return macstr;
+}
+
+void conectWifi(){
+   Serial.print("Attempting to connect to SSID: ");
+   
+    Serial.println(ssid);
+    // Connect to WPA/WPA2 network. Change this line if using open or WEP network:
+    status = WiFi.begin(ssid, pass);
+}
+
+void Calibration() {
+  ///***///set range from 0 to max distande = range
+}
+
+void setup() {
+ Serial.begin(9600);
+  //init_wifi();
+  Init_Sensors();
+  
+  /*Serial.print(ssid);
+  Serial.print(pass);
+  Serial.print(server);
+  Serial.print(estat);*/
+}
+
+void loop() {
+  if ((millis() - tics) > 10){
+    //wifi_task();
+    tics= millis();
+  }
+  if ((millis() - timer) > 5){
+    sensor_task();
+    timer= millis();
+  }
+}
