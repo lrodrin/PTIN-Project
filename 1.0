@@ -1,0 +1,122 @@
+#include <NewPing.h>
+
+#define MAXIMUM_DISTANCE 500 // in cm
+
+NewPing sensor0 = NewPing(6, 9, MAXIMUM_DISTANCE);
+NewPing sensor1 = NewPing(3, 5, MAXIMUM_DISTANCE);
+
+// variables
+int sensor0Max;
+int sensor1Max;
+bool detects0 = false;
+bool detects1 = false;
+int counter = 0;
+int seconds;
+
+// start main program PR2&PR3
+
+void setup() {
+    Init_Sensors();
+}
+
+void loop() {
+    SENSOR_TASK();
+}
+// end main program PR2&PR3
+
+void Init_Sensors() {
+
+    Serial.begin (9600);
+    Calibration();
+}
+
+void Calibration() {
+
+    int temp0 = sensor0.ping_median(10);
+    int temp1 = sensor1.ping_median(10);
+    sensor0Max = sensor0.convert_cm(temp0);
+    sensor1Max = sensor1.convert_cm(temp1);
+
+    Serial.print("MAX0: ");
+    Serial.print(sensor0Max);
+    Serial.print(" MAX1 : ");
+    Serial.println(sensor1Max);
+    Serial.println("Calibration completed");  // end of the calibration period
+    sensor0Max = sensor0Max - 3;
+    sensor1Max = sensor1Max - 3;
+}
+
+void SENSOR_TASK() {
+    seconds = millis();
+    int distance0 = sensor0.convert_cm(sensor0.ping_median(3));
+    int distance1 = sensor1.convert_cm(sensor1.ping_median(3));   //reading a sensors value
+
+    Serial.print("distance0: ");
+    Serial.println(distance0);
+    Serial.print("distance1: ");
+    Serial.println(distance1);
+    
+    Serial.print("detetcs0: ");
+    Serial.println(detects0);
+    Serial.print("detetcs1: ");
+    Serial.println(detects1);
+    
+    if(distance0 < sensor0Max) {
+        //Serial.print("detected sensor 0: ");
+        //Serial.println(distance0);
+        //Serial.print("detected sensor 1: ");
+        //Serial.println(distance1);
+        
+        if(detects1 and !detects0) {
+            
+            counter++;
+            //Serial.print("people in the room: ");
+            //Serial.println(counter);
+
+        }
+        detects0 = true;
+
+    }
+    
+    if(distance1 < sensor1Max) {
+        if(detects0 and !detects1) {
+            counter--;
+            //Serial.print("people in the room: ");
+            //Serial.println(counter);
+        }
+
+        detects1 = true;
+        //Serial.print("detected sensor 0: ");
+        //Serial.println(distance0);
+        //Serial.print("detected sensor 1: ");
+        //Serial.println(distance1);
+
+    }
+
+    if(detects0 and detects1 and distance0 >= sensor0Max and distance1 >= sensor1Max) {
+        
+        detects0 = false;
+        detects1 = false;
+    }
+
+    Serial.print("people in the room: ");
+    Serial.println(counter);
+    /*
+    //error control
+    if() {
+      if(detects0) {
+        counter++;
+        detects0 = false;
+      }
+      if(detects1) {
+        counter--;
+        detects1 = false;
+      }
+      seconds = millis();
+      Serial.print("new people in the room: ");
+      Serial.println(counter);
+
+    }*/
+    delay(50);
+}
+
