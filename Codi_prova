@@ -1,0 +1,47 @@
+#define STATE_IDLE  0
+#define STATE_COUNT 1
+//SEND?què fem?a part de incrementar una global?potser ho hauríem de fer com a cas del switch -> counter++ o counter true/false(PARLAR AMB PR2)
+
+int counter = 1;
+int fsm_state; 
+int time;
+
+void setup(){
+  Serial.begin(9600);
+}
+
+void loop(){
+  
+  
+  
+}
+
+void Init_Sensors() {
+
+    fsm_state = STATE_IDLE;
+    time = millis();
+}
+
+void SENSOR_TASK() {
+
+    switch(fsm_state) { 
+        case 0:
+            Serial.println("I am IDLE");
+	    int temp0 = sensor0.ping_median(10);
+    	    int temp1 = sensor1.ping_median(10);
+    	    distance0 = sensor0.convert_cm(temp0);
+    	    distance1 = sensor1.convert_cm(temp1);
+            if(distance0 < sensor0Max or distance1 < sensor1Max) {
+                fsm_state = STATE_COUNT;
+            }
+            else delay(1000);
+        break;
+
+        case 1:
+            time = millis();
+            Serial.println("Faig count()");
+            if(millis()-time > 5000) fsm_state = STATE_IDLE;
+        break;
+    }
+    delay(1);  
+}
