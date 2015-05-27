@@ -92,18 +92,18 @@ void sensor_task() {
      ack_ok = false;
      ping_timer = millis();
   }
-  else if (counted and (millis()-timer1 > 5000) ){ //if someone was counted and is time to send7
+  else if (counted ){ //if someone was counted and is time to send7
     Serial.println("send counter");
     send_counter = true;
     ack_ok = false;
     ping_timer = millis();
     counted = false;
-    timer1 = millis();
+    //timer1 = millis();
   }
   else if((!counted) or (millis()-timer1 < 5000)){ //if none was previously counted
     //Serial.println("count");
     Count();
-    timer1 = millis();
+    //timer1 = millis();
    }
 }
 
