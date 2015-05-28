@@ -1,0 +1,298 @@
+#include <SPI.h>
+#include <WiFi.h>
+#include <string.h>
+#include <NewPing.h>
+
+#define MAXIMUM_DISTANCE 500
+
+// Sensor object. Each sensor's trigger pin, echo pin, and max distance to ping.
+NewPing sensor1 = NewPing(6, 9, MAXIMUM_DISTANCE);
+NewPing sensor0 = NewPing(3, 5, MAXIMUM_DISTANCE);
+
+//Global Variables
+
+//WIFI variables
+char ssid[5];       //  your network SSID (name)
+char pass[18];
+byte mac[6];        //MAC address
+IPAddress server;
+int status;         // the Wifi radio's status
+WiFiClient client;
+int estat;          // estat = 0 -> IDLE estat = 1 -> send estat = 2 -> SLEEP
+unsigned long tics;
+unsigned long time;
+unsigned long timeConect;
+unsigned long timeSend;
+String macaddress;
+
+//SENSORS Variables
+int range = 0;                 //holds the range where you can detect something
+bool send_counter = false;     //signal to sent the counter
+bool ack_ok = false;           //signal to wait for ack //true when received
+bool counted = false;          //signal to know if someone was detectedM
+unsigned int counter = 0;               //global counter
+double fd = 0;                    //fake delay
+double timer,timer1;           //sensor_task timer, and fake deylay timer (count function)
+double main_timer;             //loop timer
+double ping_timer;
+double timerper = 0;
+int sensor0Max;
+int sensor1Max;
+bool detects0 = false;
+bool detects1 = false;
+int seconds;
+
+//INIT functions
+void init_wifi(){
+  Serial.println("Setup!!");
+  tics= millis();
+  
+  
+  //Connection server
+  strcpy(ssid, "XARD"); 
+  strcpy(pass, "PTIN:@2015arduino");
+  //strcpy(ssid, "Lorena");
+  //strcpy(pass, "lorenaaa");
+  
+  
+  //Neapolis server
+  IPAddress ip(10, 20, 46, 250);
+  IPAddress dns(8, 8, 4, 4);
+  IPAddress gw(10, 20, 46, 254);
+  WiFi.config(ip, dns, gw); 
+  WiFi.macAddress(mac);        // variable on guardarem l'identificador MAC del wifishield.
+  server = IPAddress(10, 20, 46, 10);  // numeric IP from Server (no DNS)
+  //strcpy(server, "147.83.159.200");    // name address for Google (using DNS)
+  status = WL_IDLE_STATUS;
+  macaddress = getmac(mac);
+  estat = 0;
+  pinMode(4, OUTPUT);
+  digitalWrite(4, HIGH);
+}
+
+void Init_Sensors() {
+  //Serial.begin (9600);
+  // Set the printer of the queue.
+  Calibration();
+  timer= millis();
+  timer1 = millis();
+  ping_timer = millis();
+  fd = millis();
+  pinMode(6, INPUT);
+  pinMode(9, INPUT);
+  pinMode(3, INPUT);
+  pinMode(5, INPUT);
+}
+
+void sensor_task() {
+  //Serial.println("sensor_taks");
+  if (!counted and (millis()-ping_timer) > 300000){//if no counted and 5 min delay send ping(counter)
+     Serial.println("send ping");
+     send_counter = true;
+     ack_ok = false;
+     ping_timer = millis();
+  }
+  else if(counted and (millis()-timer1 > 5000) ){ //if someone was counted and is time to send7
+    Serial.println("send counter");
+    send_counter = true;
+    ack_ok = false;
+    ping_timer = millis();
+    counted = false;
+    timer1 = millis();
+  }
+  else{
+    //Serial.println("count");
+    if(counted){
+    	timer1 = millis();
+        counted = false;
+    }
+    Count();
+  }
+}
+
+void wifi_task(){
+  if (estat == 0){
+    idle();
+  }else if(estat == 1){
+    envia();
+  }else if ( estat ==2){
+    sleep();
+  }
+}
+
+//IDDLE 
+void idle(){
+  //Serial.println("iddle");
+  time = millis();
+  if ((status != WL_CONNECTED) and (((time - timeConect) > 10000) or ((time-timeConect) < 0))) {
+    time = millis();
+    timeConect = millis();
+    conectWifi();
+  }
+  if (status == WL_CONNECTED) {
+    if(send_counter == true && timeSend == 0){
+       estat = 1;
+       timeSend = millis();
+    }
+    else if(send_counter == false && (millis() - timeSend > 10000)){
+        String response;
+     /*   while (client.available()){
+            Serial.println("astic al while");
+            char c = client.read();
+            response = response + String(c);
+        }*/
+        timeSend = 0; //debug timesend inicializar a 0 en otro sitio wey
+    }
+  }
+//  if((send_counter==false) and ((time-timeSend) > 300000) or ((time-timeSend) < 0)){//comprovem que pasin 5 minuts y que no hi hagin dades pendents
+  if((send_counter==false) and ((millis()-timeSend) > 300000) or ((millis()-timeSend) < 0)){//comprovem que pasin 5 minuts y que no hi hagin dades pendents
+    estat = 2;
+    WiFi.disconnect(); //desconectem del wifi
+  }
+  time = millis();
+}
+
+
+//SEND
+void envia(){
+      Serial.println("connected to server");
+      Serial.println("MAC "+macaddress); 
+      // Make a HTTP request:
+      if (client.connect(server, 8181)) {
+        Serial.println("Panxos im in!");
+        client.println("GET /rest.ivos.webservice/rest/sensors/"+macaddress+"/"+counter);
+        client.println("Host: 10.20.46.10:8181");//name of server
+        client.println("Connection: close");
+        client.println();
+        Serial.println("enviado");
+      }
+       else Serial.println(" no enviado");
+	  estat = 0;
+	  send_counter = false;
+}
+
+//SLEEP
+void sleep(){
+  Serial.println("in sleep....");
+  if (send_counter) estat=0;
+  //if (status != WL_CONNECTED) {
+    //time = millis();
+    //timeConect = millis();
+    //conectWifi();
+  //}
+}
+
+
+
+//MAC
+String getmac(byte mac[]){
+  // Mostra per pantalla la MAC de la WiFi:
+  String macstr;
+  for (int i=5; i >= 0; i--) {
+    String temp = String(mac[i], HEX);
+    if (temp.length() == 1) temp = String("0" + temp);
+    macstr = String(macstr + temp);
+    if (i > 0) macstr = String(macstr + "-");
+  }
+  return macstr;
+}
+
+
+//Connect to Wifi
+void conectWifi(){
+   Serial.print("Attempting to connect to SSID: ");
+
+    Serial.println(ssid);
+    // Connect to WPA/WPA2 network. Change this line if using open or WEP network:
+    status = WiFi.begin(ssid, pass);
+}
+
+void Count(){
+   delay(50);
+   int distance0 = sensor0.ping_cm();
+   int distance1 = sensor1.ping_cm();
+   int temps = 500;
+
+   if((millis() - fd) > temps){
+      if(distance0 < sensor0Max and distance0>0){
+       //  Serial.println("detcta0 ");
+       //  +Serial.println(distance0);
+        if(detects1 and !detects0)
+        {
+            counter++;
+            counted = true;
+            Serial.print("Persones a la sala: ");
+            Serial.println(counter);           // envia el valor de la distancia por el puerto serial
+        }
+           detects0 = true;
+        
+      }
+      else if(distance1 < sensor1Max and distance1>0)
+      {      
+       //  Serial.println("detcta1 ");
+       //  Serial.println(distance1);
+         if(detects0 and !detects1)
+         {
+           if (counter != 0){
+           counter--;
+           counted = true;
+            Serial.print("Persones a la sala: ");
+            Serial.println(counter);           // envia el valor de la distancia por el puerto serial
+            }
+          //  Serial.print("\n");
+         }
+           detects1 = true;
+      }
+      if(detects0 and detects1 and distance0 > sensor0Max and distance1 > sensor1Max)
+      {
+        detects0 = false;
+        detects1 = false;
+     //   Serial.print("receteja sensors");           // envia el valor de la distancia por el puerto serial
+     //   Serial.print("\n");
+        fd = millis();
+      }
+  }
+}
+
+void Calibration() {
+
+    int temp0 = sensor0.ping_median(10);
+    sensor0Max = sensor0.convert_cm(temp0);
+
+    Serial.println("Calibration completed");  // end of the calibration period
+    if(sensor0Max > 0){
+      sensor1Max = sensor0Max - 15;
+      sensor0Max = sensor0Max - 15;
+    }
+    else{
+      sensor0Max = 400;
+      sensor1Max = 400;
+    }
+    Serial.print("MAX0: ");
+    Serial.print(sensor0Max);
+    Serial.print(" MAX1 : ");
+    Serial.println(sensor1Max);
+  }
+
+
+void setup() {
+ Serial.begin(9600);
+   if (WiFi.status() == WL_NO_SHIELD) {
+    Serial.println("WiFi shield not present");
+    // don't continue:
+    while (true);
+  }
+  //init_wifi();
+  Init_Sensors();
+
+}
+void loop() {
+  if ((millis() - tics) > 10){
+    //wifi_task();
+    tics= millis();
+  }
+  if ((millis() - timer) > 5){
+    sensor_task();
+    timer= millis();
+  }
+}
